@@ -47,7 +47,8 @@ client.on("message", msg => {
         } at:`,
         `> x: ${planet.x}\n> y: ${planet.y}\n> z: ${planet.z}`
       );
-      // TODO: show number of guide entries for planets.
+      const guideEntries = Universe.getGuideEntriesForPlanetByName(planet.name);
+      embed.setFooter(`${guideEntries.length} guide entries available`);
       msg.channel.send(embed);
     } else {
       msg.channel.send("No object found!");
@@ -56,4 +57,3 @@ client.on("message", msg => {
 });
 
 client.login(config.token);
-console.log(Universe.getIDForStar("BALASTRACKONASTREYA"));

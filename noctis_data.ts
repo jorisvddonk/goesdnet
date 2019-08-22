@@ -36,8 +36,8 @@ export class Noctis {
       const star_x = readInt32();
       const star_y = readInt32();
       const star_z = readInt32();
-      const star_index = readInt32();
-      const star_unused = readInt32();
+      const index = readInt32();
+      const unused = readInt32();
       const name = [
         readUInt8(),
         readUInt8(),
@@ -82,7 +82,8 @@ export class Noctis {
           y: star_y,
           z: star_z,
           name: name,
-          index: typestr.substr(2)
+          index: typestr.substr(2),
+          _index: index
         });
       }
     }
@@ -161,13 +162,26 @@ export class Noctis {
     });
   };
 
+  private getGuideEntriesById = id => {
+    return this.guide_data.filter(function(entry) {
+      const diff = entry.object_id - id;
+      return diff > -0.00001 && diff < 0.00001;
+    });
+  };
+
   getGuideEntriesForStar = starid => {
     if (!isNumber(starid)) {
       starid = this.getIDForStar(starid);
     }
-    return this.guide_data.filter(function(entry) {
-      const diff = entry.object_id - starid;
-      return diff > -0.00001 && diff < 0.00001;
-    });
+    return this.getGuideEntriesById(starid);
+  };
+
+  getGuideEntriesForPlanetByName = (planetName: string) => {
+    const planet = this.getPlanetByName(planetName);
+    if (planet) {
+      const starid = this.getIDForStarCoordinates(planet.x, planet.y, planet.z);
+      const planetid = planet._index + starid;
+      return this.getGuideEntriesById(planetid);
+    }
   };
 }

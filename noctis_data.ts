@@ -4,6 +4,7 @@ import { isObject, isString, isNumber } from "util";
 export class Noctis {
   public guide_data = [];
   public stars = [];
+  public planets = [];
 
   constructor() {
     this.readStarmap();
@@ -15,28 +16,29 @@ export class Noctis {
 
     var dataView = new DataView(buffer.buffer);
     var offset = 0;
-    var readUInt8 = function() {
+    const readUInt8 = function() {
       const retval = buffer.readUInt8(offset);
       offset += 1;
       return retval;
     };
-    var readInt32 = function() {
+    const readInt32 = function() {
       const retval = buffer.readInt32LE(offset);
       offset += 4;
       return retval;
     };
 
-    var numEntries = dataView.byteLength / 44;
-    var stars = [];
-    var scale = 0.0000001;
+    const numEntries = dataView.byteLength / 44;
+    const stars = [];
+    const planets = [];
+    const scale = 0.0000001;
 
     for (var i = 0; i < numEntries; i++) {
-      var star_x = readInt32();
-      var star_y = readInt32();
-      var star_z = readInt32();
-      var star_index = readInt32();
-      var star_unused = readInt32();
-      var star_name = [
+      const star_x = readInt32();
+      const star_y = readInt32();
+      const star_z = readInt32();
+      const star_index = readInt32();
+      const star_unused = readInt32();
+      const name = [
         readUInt8(),
         readUInt8(),
         readUInt8(),
@@ -61,21 +63,31 @@ export class Noctis {
         .map(x => String.fromCodePoint(x))
         .join("")
         .trim();
-      var star_typestr = [readUInt8(), readUInt8(), readUInt8(), readUInt8()]
+      const typestr = [readUInt8(), readUInt8(), readUInt8(), readUInt8()]
         .map(x => String.fromCodePoint(x))
         .join("");
 
-      if (star_typestr[1] === "S") {
+      if (typestr[1] === "S") {
         stars.push({
           x: star_x,
           y: star_y,
           z: star_z,
-          name: star_name,
-          type: star_typestr.substr(2)
+          name: name,
+          object_id: this.getIDForStarCoordinates(star_x, star_y, star_z),
+          type: typestr.substr(2)
+        });
+      } else if (typestr[1] === "P") {
+        planets.push({
+          x: star_x,
+          y: star_y,
+          z: star_z,
+          name: name,
+          index: typestr.substr(2)
         });
       }
     }
     this.stars = stars;
+    this.planets = planets;
   }
 
   readGuide() {
@@ -122,6 +134,13 @@ export class Noctis {
     });
   };
 
+  getPlanetByName = planetname => {
+    const planetname_lower = planetname.toLowerCase();
+    return this.planets.find(planet => {
+      return planet.name.toLowerCase() == planetname_lower;
+    });
+  };
+
   getIDForStar = starname_or_object => {
     let star = starname_or_object;
     if (isString(starname_or_object)) {
@@ -130,6 +149,16 @@ export class Noctis {
     if (isObject(star)) {
       return this.getIDForStarCoordinates(star.x, star.y, star.z);
     }
+  };
+
+  getStarByID = starid => {
+    if (!isNumber(starid)) {
+      starid = this.getIDForStar(starid);
+    }
+    return this.stars.find(function(entry) {
+      const diff = entry.object_id - starid;
+      return diff > -0.00001 && diff < 0.00001;
+    });
   };
 
   getGuideEntriesForStar = starid => {

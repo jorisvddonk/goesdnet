@@ -117,7 +117,7 @@ export class Noctis {
       }
       var newdata = {
         object_id: objid,
-        text: text
+        text: text.replace(/[^ -~]+/g, "")
       };
       datas.push(newdata);
     }

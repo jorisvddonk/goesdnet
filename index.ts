@@ -54,6 +54,56 @@ client.on("message", msg => {
       msg.channel.send("No object found!");
     }
   }
+
+  if (msg.content.indexOf("!guide ") === 0) {
+    const rmsg = msg.content.replace("!guide ", "");
+    const tgtRE = rmsg.match(/([a-zA-Z0-9 ]+)/);
+    if (tgtRE) {
+      const tgt = tgtRE[0].trim();
+      const offsetRE = rmsg.match(/\(\+(\d+)\)/);
+      let offset = 0;
+      if (offsetRE) {
+        offset = parseInt(offsetRE[1]);
+      }
+
+      let guideEntries = Universe.getGuideEntriesForStar(
+        Universe.getIDForStar(tgt)
+      );
+      if (guideEntries.length === 0) {
+        guideEntries = Universe.getGuideEntriesForPlanetByName(tgt);
+      }
+
+      let entriesText = "No entries found in GUIDE";
+      let entriesFooter = null;
+      if (guideEntries.length > 0) {
+        const offsetMax = offset + 10;
+        const displayGuideEntries = guideEntries.filter((x, index) => {
+          return index >= offset && index < offsetMax;
+        });
+        entriesText = displayGuideEntries.map(x => `> ${x.text}`).join("\n");
+        const remainingEntries = guideEntries.length - offsetMax;
+        if (remainingEntries > 0) {
+          entriesFooter = `${remainingEntries} more entries available: !guide ${tgt.toUpperCase()} (+${offsetMax})`;
+        } else {
+          entriesFooter = "No more entries remaining";
+        }
+      }
+      if (entriesText.length > 0) {
+        const embed = makeEmbed(
+          `Guide entries for ${tgt.toUpperCase()}:`,
+          entriesText
+        );
+        if (entriesFooter) {
+          embed.setFooter(entriesFooter);
+        }
+        msg.channel.send(embed);
+      } else {
+        msg.channel.send("No (more) entries found!");
+      }
+    } else {
+      msg.channel.send("No object found!");
+    }
+  }
 });
 
 client.login(config.token);

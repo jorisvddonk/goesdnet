@@ -17,15 +17,15 @@ client.on("message", msg => {
     if (star !== undefined) {
       const exampleEmbed = new Discord.RichEmbed()
         .setColor("#0099ff")
+        .setAuthor(
+          "GOESDNET",
+          undefined,
+          "https://github.com/jorisvddonk/goesdnet"
+        )
         .setThumbnail("http://mooses.nl/nice/misc/noctisiv_logo.png")
         .addField(
           `Star S${star.type} ${star.name} found at:`,
           `> x: ${star.x}\n> y: ${star.y}\n> z: ${star.z}`
-        )
-        .setTimestamp()
-        .setFooter(
-          "Powered by GOESDNET",
-          "http://mooses.nl/nice/misc/noctisiv_logo.png"
         );
       msg.channel.send(exampleEmbed);
     } else {

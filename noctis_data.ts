@@ -1,21 +1,27 @@
 import * as fs from "fs";
+import { isObject, isString, isNumber } from "util";
 
 export class Noctis {
-  private guide_data = [];
-  private stars = [];
+  public guide_data = [];
+  public stars = [];
 
   constructor() {
+    this.readStarmap();
+    this.readGuide();
+  }
+
+  readStarmap() {
     const buffer = fs.readFileSync("./data/starmap2.bin");
 
     var dataView = new DataView(buffer.buffer);
     var offset = 0;
     var readUInt8 = function() {
-      var retval = dataView.getUint8(offset);
+      const retval = buffer.readUInt8(offset);
       offset += 1;
       return retval;
     };
     var readInt32 = function() {
-      var retval = dataView.getInt32(offset);
+      const retval = buffer.readInt32LE(offset);
       offset += 4;
       return retval;
     };
@@ -62,7 +68,7 @@ export class Noctis {
       if (star_typestr[1] === "S") {
         stars.push({
           x: star_x,
-          y: -star_y,
+          y: star_y,
           z: star_z,
           name: star_name,
           type: star_typestr.substr(2)
@@ -70,31 +76,25 @@ export class Noctis {
       }
     }
     this.stars = stars;
+  }
 
+  readGuide() {
     const buffer_guide = fs.readFileSync("./data/GUIDE.BIN");
-    var dataView = new DataView(buffer_guide.buffer);
-    var offset = 4;
-    var getUInt8 = function() {
-      var retval = dataView.getUint8(offset);
+    let offset = 4;
+    const getUInt8 = function() {
+      const retval = buffer_guide.readUInt8(offset);
       offset += 1;
       return retval;
     };
+    const getDoubleLE = function() {
+      const retval = buffer_guide.readDoubleLE(offset);
+      offset += 8;
+      return retval;
+    };
     var datas = [];
-    while (offset < dataView.byteLength) {
+    while (offset < buffer_guide.byteLength) {
       try {
-        var sub = new DataView(
-          new Uint8Array([
-            getUInt8(),
-            getUInt8(),
-            getUInt8(),
-            getUInt8(),
-            getUInt8(),
-            getUInt8(),
-            getUInt8(),
-            getUInt8()
-          ]).buffer
-        );
-        var objid = sub.getFloat64(0, true);
+        var objid = getDoubleLE();
         var text = "";
         for (var j = 0; j < 76; j++) {
           text = text + String.fromCharCode(getUInt8());
@@ -116,26 +116,28 @@ export class Noctis {
   };
 
   getStarByName = starname => {
-    var starname_lower = starname.toLowerCase();
+    const starname_lower = starname.toLowerCase();
     return this.stars.find(star => {
       return star.name.toLowerCase() == starname_lower;
     });
   };
 
   getIDForStar = starname_or_object => {
-    var star = starname_or_object;
-    if (typeof starname_or_object === "string") {
+    let star = starname_or_object;
+    if (isString(starname_or_object)) {
       star = this.getStarByName(starname_or_object);
     }
-    return this.getIDForStarCoordinates(star.x, star.y, star.z);
+    if (isObject(star)) {
+      return this.getIDForStarCoordinates(star.x, star.y, star.z);
+    }
   };
 
   getGuideEntriesForStar = starid => {
-    if (typeof starid !== "number") {
+    if (!isNumber(starid)) {
       starid = this.getIDForStar(starid);
     }
     return this.guide_data.filter(function(entry) {
-      var diff = entry.object_id - starid;
+      const diff = entry.object_id - starid;
       return diff > -0.00001 && diff < 0.00001;
     });
   };

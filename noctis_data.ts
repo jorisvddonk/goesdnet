@@ -71,7 +71,7 @@ export class Noctis {
     }
     this.stars = stars;
 
-    const buffer_guide = fs.readFileSync("./data/GUIDE.bin");
+    const buffer_guide = fs.readFileSync("./data/GUIDE.BIN");
     var dataView = new DataView(buffer_guide.buffer);
     var offset = 4;
     var getUInt8 = function() {

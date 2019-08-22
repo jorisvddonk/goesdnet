@@ -14,6 +14,8 @@ client.on("message", msg => {
   if (msg.content.indexOf("!starcoords ") === 0) {
     const tgt = msg.content.replace("!starcoords ", "");
     const star = Universe.getStarByName(tgt);
+    const guideEntries = Universe.getGuideEntriesForStar(tgt);
+
     if (star !== undefined) {
       const exampleEmbed = new Discord.RichEmbed()
         .setColor("#0099ff")
@@ -26,7 +28,8 @@ client.on("message", msg => {
         .addField(
           `Star S${star.type} ${star.name} found at:`,
           `> x: ${star.x}\n> y: ${star.y}\n> z: ${star.z}`
-        );
+        )
+        .setFooter(`${guideEntries.length} guide entries available`);
       msg.channel.send(exampleEmbed);
     } else {
       msg.channel.send("Star not found!");

@@ -95,7 +95,7 @@ const guideCommand = {
       entriesText = displayGuideEntries.map(x => `> ${x.text}`).join("\n");
       const remainingEntries = guideEntries.length - offsetMax;
       if (remainingEntries > 0) {
-        entriesFooter = `${remainingEntries} more entries available.`;
+        entriesFooter = `${remainingEntries} more entries available. /guide ${tgt.toUpperCase()} ${offsetMax}`;
       } else {
         entriesFooter = "No more entries remaining";
       }

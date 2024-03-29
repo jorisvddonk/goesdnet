@@ -33,7 +33,7 @@ const lookupCommand = {
     if (star !== undefined) {
       const embed = makeEmbed(
         `Star S${star.type} ${star.name} found at`,
-        `x: ${star.x}\ny: ${star.y}\nz: ${star.z}`
+        `x: ${star.x}\ny: ${-star.y}\nz: ${star.z}`
       );
       const guideEntries = Universe.getGuideEntriesForStar(tgt);
       embed.setFooter({ text: `${guideEntries.length} guide entries available` });
@@ -50,7 +50,7 @@ const lookupCommand = {
           ? "found orbiting " + parentstar.name
           : "orbiting around unknown star"
         } at`,
-        `x: ${planet.x}\ny: ${planet.y}\nz: ${planet.z}`
+        `x: ${planet.x}\ny: ${-planet.y}\nz: ${planet.z}`
       );
       const guideEntries = Universe.getGuideEntriesForPlanetByName(planet.name);
       embed.setFooter({ text: `${guideEntries.length} guide entries available` });
